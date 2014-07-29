@@ -6,16 +6,21 @@ var app = express();
 var schedule = require('node-schedule');
 
 var baseMarvelURL = 'http://marvel.com';
-var baseImageURL = 'https://imagecomics.com';
+var baseImageURL = 'http://imagecomics.com';
+var baseDCURL = 'http://www.dccomics.com';
 
-//Marvel releases updated every weekday at 7am
-var marvelRule = new schedule.RecurrenceRule();
-marvelRule.hour = 7;
-marvelRule.dayOfWeek = new schedule.Range(1, 5);
 //Image releases updated every weekday at 6am
 var imageRule = new schedule.RecurrenceRule();
 imageRule.hour = 6;
 imageRule.dayOfWeek = new schedule.Range(1, 5);
+//Marvel releases updated every weekday at 7am
+var marvelRule = new schedule.RecurrenceRule();
+marvelRule.hour = 7;
+marvelRule.dayOfWeek = new schedule.Range(1, 5);
+//Image releases updated every weekday at 8am
+var dcRule = new schedule.RecurrenceRule();
+dcRule.hour = 6;
+dcRule.dayOfWeek = new schedule.Range(1, 5);
 
 var marvelScrape = schedule.scheduleJob(marvelRule, function(){
 
@@ -37,7 +42,7 @@ var marvelScrape = schedule.scheduleJob(marvelRule, function(){
 
                 var title = $(this).text().trim();
                 var link = baseMarvelURL + $(this).find('a').attr('href');
-
+                //TODO: Fetch date from each page
                 var comic = {
                     title: title,
                     link: link,
@@ -76,7 +81,45 @@ var imageScrape = schedule.scheduleJob(imageRule, function(){
                 var title = $(this).find('h1').text().trim();
                 var link = baseImageURL + $(this).find('h1').find('a').attr('href');
                 var date = $(this).find('.pub_date').text();
+                //TODO: Format date using moment
+                var comic = {
+                    title: title,
+                    link: link,
+                    date: date
+                };
 
+                releases.push(comic);
+                console.log(comic);
+            });
+
+            //TODO: save to/update database
+
+        }
+    });
+});
+
+var dcScrape = schedule.scheduleJob(dcRule, function(){
+
+    var url = baseDCURL + '/browse?content_type=comic&date=08/01/2014&date_end=08/31/2014';
+
+    request(url, function(error, response, html){
+        if(!error){
+
+            var $ = cheerio.load(html);
+
+            var releases = [];
+
+            var domComics = $('li .title');
+            if(domComics.length === 0){
+                return;
+            }
+
+            domComics.each(function(){
+
+                var title = $(this).find('a').text().trim();
+                var link = baseImageURL + $(this).find('a').attr('href');
+                var date = $(this).find('.onsale').text();
+                //TODO: Format date using moment
                 var comic = {
                     title: title,
                     link: link,
