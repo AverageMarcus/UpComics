@@ -1,0 +1,17 @@
+{
+  "name": "UpComics",
+  "version": "0.0.0",
+  "description": "API for upcoming comic releases",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Marcus Noble",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "express": "latest",
+    "request": "latest",
+    "cheerio": "latest",
+    "node-schedule": "~0.1.13"
+  }
+}
