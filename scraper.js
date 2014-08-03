@@ -1,8 +1,5 @@
-var express = require('express');
-var fs = require('fs');
 var request = require('request');
 var cheerio = require('cheerio');
-var app = express();
 var schedule = require('node-schedule');
 var mongoose = require('mongoose');
 var moment = require('moment');
@@ -173,5 +170,3 @@ db.once('open', function() {
 });
 
 mongoose.connect('mongodb://localhost/UpComics');
-
-exports = module.exports = app;
