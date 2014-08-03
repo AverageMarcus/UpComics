@@ -1,6 +1,7 @@
 var express = require('express');
 var app     = express();
 var process = require('child_process');
+var api = require('./api');
 
 var scraper = process.spawn('node', ['scraper.js']);
 var restartScraper = function(code){
