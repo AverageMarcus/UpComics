@@ -15,33 +15,21 @@ var db = mongoose.connection;
 
 db.on('error', console.error);
 db.once('open', function() {
-  var comicSchema = new mongoose.Schema({
-      title: {  type: String },
-      issue: Number,
-      release_date: Date,
-      publisher: String,
-      link : String
+    console.log("We have a database");
+    var comicSchema = new mongoose.Schema({
+        title: {  type: String },
+        issue: Number,
+        release_date: Date,
+        publisher: String,
+        link : String
     });
 
     var Comic = mongoose.model('Comic', comicSchema);
 
-    //Image releases updated every weekday at 6am
-    var imageRule = new schedule.RecurrenceRule();
-    imageRule.hour = 6;
-    imageRule.dayOfWeek = new schedule.Range(1, 5);
-    //Marvel releases updated every weekday at 7am
-    var marvelRule = new schedule.RecurrenceRule();
-    marvelRule.hour = 7;
-    marvelRule.dayOfWeek = new schedule.Range(1, 5);
-    //Image releases updated every weekday at 8am
-    var dcRule = new schedule.RecurrenceRule();
-    dcRule.hour = 6;
-    dcRule.dayOfWeek = new schedule.Range(1, 5);
-
-    var marvelScrape = schedule.scheduleJob(marvelRule, function(){
+    var marvelScrape = schedule.scheduleJob({hour: 7, dayOfWeek: new schedule.Range(1, 5)}, function(){
         var scrapeMarvelComics = function scrapeMarvelComics(month){
             var now = month || moment();
-            var url = baseMarvelURL + '/comics/calendar/month/'+now.display("YYYY-MM-DD");
+            var url = baseMarvelURL + '/comics/calendar/month/'+now.display("YYYY-MM-01");
 
             request(url, function(error, response, html){
                 if(!error){
@@ -54,7 +42,6 @@ db.once('open', function() {
                     }
 
                     domComics.each(function(){
-
                         var title = $(this).text().trim();
                         var link = baseMarvelURL + $(this).find('a').attr('href');
                         //TODO: Fetch date from each page
@@ -66,11 +53,13 @@ db.once('open', function() {
                             publisher: 'Marvel',
                             link : link
                         });
-                        newComic.save(function(err, newComic){
+
+                        Comic.update({ title : newComic.title, publisher: newComic.publisher}, newComic, {upsert:true}, function(err, newComic){
                             if (err) return console.error(err);
                         });
                     });
-
+                    now.add('months', 1);
+                    scrapeMarvelComics(now);
                 }
             });
         };
@@ -78,10 +67,10 @@ db.once('open', function() {
     });
 
 
-    var imageScrape = schedule.scheduleJob(imageRule, function(){
+    var imageScrape = schedule.scheduleJob({hour: 6, dayOfWeek: new schedule.Range(1, 5)}, function(){
         var scrapeImageComics = function scrapeImageComics(month){
             var now = month || moment();
-            var url = baseImageURL + '/comics/upcoming-releases/'+moment.display("YYYY/D");
+            var url = baseImageURL + '/comics/upcoming-releases/'+moment.display("YYYY/M");
 
             request(url, function(error, response, html){
                 if(!error){
@@ -108,17 +97,20 @@ db.once('open', function() {
                             publisher: 'Image',
                             link : link
                         });
-                        newComic.save(function(err, newComic){
+
+                        Comic.update({ title : newComic.title, publisher: newComic.publisher}, newComic, {upsert:true}, function(err, newComic){
                             if (err) return console.error(err);
                         });
                     });
+                    now.add('months', 1);
+                    scrapeImageComics(now);
                 }
             });
         };
         scrapeImageComics();
     });
 
-    var dcScrape = schedule.scheduleJob(dcRule, function(){
+    var dcScrape = schedule.scheduleJob({hour: 5, dayOfWeek: new schedule.Range(1, 5)}, function(){
         var scrapeDCComics = function scrapeDCComics(month){
             var now = month || moment();
             var lastDayOfMonth = now.add('months', 1).date(0);
@@ -151,10 +143,13 @@ db.once('open', function() {
                             publisher: 'DC',
                             link : link
                         });
-                        newComic.save(function(err, newComic){
+
+                        Comic.update({ title : newComic.title, publisher: newComic.publisher}, newComic, {upsert:true}, function(err, newComic){
                             if (err) return console.error(err);
                         });
                     });
+                    now.add('months', 1);
+                    scrapeDCComics(now);
                 }
             });
         });
