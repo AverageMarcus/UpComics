@@ -2,6 +2,7 @@ var request = require('request');
 var cheerio = require('cheerio');
 var schedule = require('node-schedule');
 var mongoose = require('mongoose');
+var Comic = require('./models/comic').Comic;
 var moment = require('moment');
 var titleHelper = require('./TitleHelper');
 
@@ -14,15 +15,6 @@ var db = mongoose.connection;
 db.on('error', console.error);
 db.once('open', function() {
     console.log("We have a database");
-    var comicSchema = new mongoose.Schema({
-        title: {  type: String },
-        issue: String,
-        release_date: Date,
-        publisher: String,
-        link : String
-    });
-
-    var Comic = mongoose.model('Comic', comicSchema);
 
     var marvelScrape = schedule.scheduleJob({hour: 7, dayOfWeek: new schedule.Range(1, 5)}, function(){
         var scrapeMarvelComics = function scrapeMarvelComics(month){
