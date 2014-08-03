@@ -15,6 +15,11 @@ app.get('/', function(req, res){
     res.status(200).end();
 });
 
+app.get('/publisher/:publisher/count', api.countByPublisher);
+app.get('/date/:date', api.getComicsByDate);
+app.get('/today', api.getTodaysReleases);
+app.get('/thisweek', api.getThisWeeksReleases);
+
 app.listen('8081')
 console.log('Magic happens on port 8081');
 exports = module.exports = app;

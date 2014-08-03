@@ -3,7 +3,7 @@ var mongoose = require("mongoose");
 var comicSchema = new mongoose.Schema({
   title: {  type: String },
   issue: String,
-  release_date: Date,
+  release_date: String,
   publisher: String,
   link : String
 });

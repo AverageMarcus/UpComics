@@ -2,7 +2,7 @@ var request = require('request');
 var cheerio = require('cheerio');
 var schedule = require('node-schedule');
 var mongoose = require('mongoose');
-var Comic = require('./models/comic').Comic;
+var Comic = require('./models/Comic').Comic;
 var moment = require('moment');
 var titleHelper = require('./TitleHelper');
 
@@ -58,7 +58,7 @@ db.once('open', function() {
         scrapeMarvelComics();
     });
 
-    var imageScrape = schedule.scheduleJob({hour: 6, dayOfWeek: new schedule.Range(1, 5)}, function(){
+    var imageScrape = schedule.scheduleJob(new Date()/*{hour: 6, dayOfWeek: new schedule.Range(1, 5)}*/, function(){
         console.log("About to scrape Image comics");
         var scrapeImageComics = function scrapeImageComics(month){
             var now = month || moment();
@@ -90,7 +90,7 @@ db.once('open', function() {
                         var newComic = {
                             title: title,
                             issue: issue,
-                            release_date: date,
+                            release_date: date.format('YYYY-MM-DD'),
                             publisher: 'Image',
                             link : link
                         };
@@ -107,7 +107,7 @@ db.once('open', function() {
         scrapeImageComics();
     });
 
-    var dcScrape = schedule.scheduleJob({hour: 5, dayOfWeek: new schedule.Range(1, 5)}, function(){
+    var dcScrape = schedule.scheduleJob(new Date()/*{hour: 5, dayOfWeek: new schedule.Range(1, 5)}*/, function(){
         console.log("About to scrape DC comics");
         var scrapeDCComics = function scrapeDCComics(month){
             var now = month || moment();
@@ -143,7 +143,7 @@ db.once('open', function() {
                         var newComic = {
                             title: title,
                             issue: issue,
-                            release_date: date,
+                            release_date: date.format('YYYY-MM-DD'),
                             publisher: 'DC',
                             link : link
                         };
