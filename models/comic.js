@@ -12,4 +12,4 @@ var Comic = mongoose.model('Comic', comicSchema);
 
 module.exports = {
   Comic: Comic
-}
+};
