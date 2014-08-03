@@ -1,8 +1,19 @@
 var mongoose = require('mongoose');
-var Comic =require('./models/Comic').Comic;
+var Comic = require('./models/Comic').Comic;
+var User = require('./models/User').User;
 var moment = require('moment');
 
 mongoose.connect('mongodb://localhost/UpComics');
+
+exports.validateApiKey = function(req, res, next){
+	User.count({_id : req.query.api_key}, function(error, count){
+		if(!error && count){
+			next();
+		}else{
+			res.status(500).send('API Key Invalid');
+		}
+	});
+};
 
 exports.countByPublisher = function(req, res){
 	Comic.count({publisher : new RegExp(req.param('publisher'), "i")}, { '_id': 0 }, function(error, count){
@@ -44,5 +55,12 @@ exports.getThisWeeksReleases = function(req, res){
 		.exec(function(error, docs){
 			if(error) console.error(error);
 			res.send(docs);
+	});
+};
+
+exports.getBySeries = function(req, res){
+	Comic.find({title : new RegExp(req.param('series'), "i") }, { '_id': 0 }, function(error, docs){
+		if(error) console.error(error);
+		res.send(docs);
 	});
 };

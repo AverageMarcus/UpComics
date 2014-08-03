@@ -58,7 +58,7 @@ db.once('open', function() {
         scrapeMarvelComics();
     });
 
-    var imageScrape = schedule.scheduleJob(new Date()/*{hour: 6, dayOfWeek: new schedule.Range(1, 5)}*/, function(){
+    var imageScrape = schedule.scheduleJob({hour: 6, dayOfWeek: new schedule.Range(1, 5)}, function(){
         console.log("About to scrape Image comics");
         var scrapeImageComics = function scrapeImageComics(month){
             var now = month || moment();
@@ -107,7 +107,7 @@ db.once('open', function() {
         scrapeImageComics();
     });
 
-    var dcScrape = schedule.scheduleJob(new Date()/*{hour: 5, dayOfWeek: new schedule.Range(1, 5)}*/, function(){
+    var dcScrape = schedule.scheduleJob({hour: 5, dayOfWeek: new schedule.Range(1, 5)}, function(){
         console.log("About to scrape DC comics");
         var scrapeDCComics = function scrapeDCComics(month){
             var now = month || moment();
