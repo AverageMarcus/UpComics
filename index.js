@@ -11,6 +11,8 @@ var restartScraper = function(code){
 };
 scraper.on('close', restartScraper);
 
+app.set('port', process.env.PORT || 8081);
+
 app.get('/', function(req, res){
     res.status(200).end();
 });
@@ -26,6 +28,6 @@ app.get('/thisweek', api.getThisWeeksReleases);
 // Series
 app.get('/series/:series', api.getBySeries);
 
-app.listen('8081');
-console.log('Magic happens on port 8081');
+app.listen(app.get('port'));
+console.log('Magic happens on port ' + app.get('port'));
 exports = module.exports = app;
