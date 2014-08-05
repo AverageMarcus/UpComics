@@ -5,9 +5,9 @@ var api = require('./api');
 
 var scraper = process.spawn('node', ['scraper.js']);
 var restartScraper = function(code){
-	console.log('Scraper exited with code ' + code + '. Restarting...');
-	scraper = process.spawn('node', ['scraper.js']);
-	scraper.on('close', restartScraper);
+    console.log('Scraper exited with code ' + code + '. Restarting...');
+    scraper = process.spawn('node', ['scraper.js']);
+    scraper.on('close', restartScraper);
 };
 scraper.on('close', restartScraper);
 
@@ -17,7 +17,12 @@ app.get('/', function(req, res){
     res.status(200).end();
 });
 
-
+app.all('*', function(req, res, next) {
+    // Allow cross origin requests
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "X-Requested-With");
+    next();
+ });
 app.all('*', api.validateApiKey);
 // Publisher
 app.get('/publisher/:publisher/count', api.countByPublisher);
