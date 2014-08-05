@@ -1,12 +1,12 @@
 var express = require('express');
 var app     = express();
-var process = require('child_process');
+var childprocess = require('child_process');
 var api = require('./api');
 
-var scraper = process.spawn('node', ['scraper.js']);
+var scraper = childprocess.spawn('node', ['scraper.js']);
 var restartScraper = function(code){
     console.log('Scraper exited with code ' + code + '. Restarting...');
-    scraper = process.spawn('node', ['scraper.js']);
+    scraper = childprocess.spawn('node', ['scraper.js']);
     scraper.on('close', restartScraper);
 };
 scraper.on('close', restartScraper);
