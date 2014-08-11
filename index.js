@@ -1,7 +1,8 @@
 var express = require('express');
-var app     = express();
+var app = express();
 var childprocess = require('child_process');
 var api = require('./api');
+var firstrun = require('./FirstRun');
 
 var scraper = childprocess.spawn('node', ['scraper.js']);
 var restartScraper = function(code){
@@ -13,10 +14,13 @@ scraper.on('close', restartScraper);
 
 app.set('port', process.env.PORT || 8081);
 
+// Index
 app.get('/', function(req, res){
-    res.status(200).end();
+    firstrun.checkFirstRun(req, res, function(req, res){
+        res.status(200).end();
+    });
 });
-
+// All routes
 app.all('*', function(req, res, next) {
     // Allow cross origin requests
     res.header("Access-Control-Allow-Origin", "*");
@@ -24,6 +28,8 @@ app.all('*', function(req, res, next) {
     next();
  });
 app.all('*', api.validateApiKey);
+// First Run
+app.get('/firstrun', api.index);
 // Publisher
 app.get('/publisher/:publisher/count', api.countByPublisher);
 // Date
