@@ -7,7 +7,7 @@ exports.checkFirstRun = function(req, res, next){
 			res.status(500).send(error);
 		}else{
 			if(count){
-				next(res, req);
+				next(req, res);
 			}else{
 				res.redirect('/firstrun');
 			}
@@ -16,5 +16,9 @@ exports.checkFirstRun = function(req, res, next){
 };
 
 exports.index = function(req, res, next){
-	//TODO: add first run pages
+	res.render('FirstRun');
+};
+
+exports.submit = function(req, res, next){
+	//TODO: Create admin user and display API key
 };
