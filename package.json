@@ -16,6 +16,7 @@
     "mongoose": "~3.8.14",
     "moment": "~2.8.1",
     "consolidate": "~0.10.0",
-    "ejs": "~1.0.0"
+    "ejs": "~1.0.0",
+    "body-parser": "~1.6.3"
   }
 }

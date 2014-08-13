@@ -1,24 +1,55 @@
 var mongoose = require('mongoose');
 var User = require('./models/User').User;
 
-exports.checkFirstRun = function(req, res, next){
+var getFirstRun = function getFirstRun(next){
 	User.count({}, function(error, count){
-		if(error){
-			res.status(500).send(error);
+		if(count){
+			return next(false);
+		}
+		return next(true);
+	});
+};
+
+exports.checkFirstRun = function(req, res, next){
+	getFirstRun(function(isFirstRun){
+		if(isFirstRun){
+			res.redirect('/firstrun');
 		}else{
-			if(count){
-				next(req, res);
-			}else{
-				res.redirect('/firstrun');
-			}
+			return next(req, res);
 		}
 	});
 };
 
 exports.index = function(req, res, next){
-	res.render('FirstRun');
-};
+	getFirstRun(function(isFirstRun){
+		if(isFirstRun){
+			res.render('FirstRun');
+		}else{
+			res.redirect('/');
+		}
+	});
+};`
 
 exports.submit = function(req, res, next){
-	//TODO: Create admin user and display API key
+	getFirstRun(function(isFirstRun){
+		if(isFirstRun){
+			var name = req.param('name');
+			var email = req.param('email');
+			
+			var superhero = {
+				name: name,
+				email: email,
+				is_superhero: true
+			};
+			User.create(superhero, function(error, doc){
+				if(error){
+					res.status(500).send(error);
+				}else{
+					res.render('AccountCreated', {user: doc});
+				}
+			});
+		}else{
+			res.status(500).send('Account already created');
+		}
+	});	
 };

@@ -1,4 +1,5 @@
 var express = require('express');
+var bodyParser = require('body-parser')
 var app = express();
 var childprocess = require('child_process');
 var api = require('./api');
@@ -12,6 +13,13 @@ var restartScraper = function(code){
     scraper.on('close', restartScraper);
 };
 scraper.on('close', restartScraper);
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+// parse application/json
+app.use(bodyParser.json())
+// parse application/vnd.api+json as json
+app.use(bodyParser.json({ type: 'application/vnd.api+json' }))
 
 app.use(express.static(__dirname + '/public'));
 app.set('views', __dirname + '/views');
@@ -35,7 +43,7 @@ app.all('*', function(req, res, next) {
 app.all('*', api.validateApiKey);
 // First Run
 app.get('/firstrun', firstrun.index);
-app.post('/firstrun/submit', firstrun.submit);
+app.post('/firstrun', firstrun.submit);
 // Publisher
 app.get('/publisher/:publisher/count', api.countByPublisher);
 // Date
