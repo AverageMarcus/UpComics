@@ -1,7 +1,9 @@
 var express = require('express');
-var app     = express();
+var app = express();
 var childprocess = require('child_process');
 var api = require('./api');
+var firstrun = require('./FirstRun');
+var engines = require('consolidate');
 
 var scraper = childprocess.spawn('node', ['scraper.js']);
 var restartScraper = function(code){
@@ -11,12 +13,19 @@ var restartScraper = function(code){
 };
 scraper.on('close', restartScraper);
 
+app.use(express.static(__dirname + '/public'));
+app.set('views', __dirname + '/views');
+app.engine('html', engines.ejs);
+app.set('view engine', 'html');
 app.set('port', process.env.PORT || 8081);
 
+// Index
 app.get('/', function(req, res){
-    res.status(200).end();
+    firstrun.checkFirstRun(req, res, function(req, res){
+        res.status(200).end();
+    });
 });
-
+// All routes
 app.all('*', function(req, res, next) {
     // Allow cross origin requests
     res.header("Access-Control-Allow-Origin", "*");
@@ -24,6 +33,9 @@ app.all('*', function(req, res, next) {
     next();
  });
 app.all('*', api.validateApiKey);
+// First Run
+app.get('/firstrun', firstrun.index);
+app.post('/firstrun/submit', firstrun.submit);
 // Publisher
 app.get('/publisher/:publisher/count', api.countByPublisher);
 // Date

@@ -6,6 +6,9 @@ var moment = require('moment');
 mongoose.connect('mongodb://localhost/UpComics');
 
 exports.validateApiKey = function(req, res, next){
+	if (req.path == '/' || req.path.toLowerCase().indexOf('/firstrun') >= 0){
+		return next();
+	}
 	User.count({_id : req.query.api_key}, function(error, count){
 		if(!error && count){
 			next();
