@@ -28,7 +28,7 @@ exports.index = function(req, res, next){
 			res.redirect('/');
 		}
 	});
-};`
+};
 
 exports.submit = function(req, res, next){
 	getFirstRun(function(isFirstRun){

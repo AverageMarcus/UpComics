@@ -45,13 +45,20 @@ app.all('*', api.validateApiKey);
 app.get('/firstrun', firstrun.index);
 app.post('/firstrun', firstrun.submit);
 // Publisher
+app.get('/publisher/:publisher', api.getByPublisher);
 app.get('/publisher/:publisher/count', api.countByPublisher);
 // Date
 app.get('/date/:date', api.getComicsByDate);
+app.get('/date/:date/count', api.countComicsByDate);
 app.get('/today', api.getTodaysReleases);
+app.get('/today/count', api.countTodaysReleases);
 app.get('/thisweek', api.getThisWeeksReleases);
+app.get('/thisweek/count', api.countThisWeeksReleases);
 // Series
 app.get('/series/:series', api.getBySeries);
+app.get('/series/:series/count', api.countBySeries);
+// Advanced search
+app.get('/search', api.advancedSearch);
 
 app.listen(app.get('port'));
 console.log('Magic happens on port ' + app.get('port'));
