@@ -1,8 +1,12 @@
 var mongoose = require('mongoose');
 var Comic = require('./models/Comic').Comic;
 var User = require('./models/User').User;
+var AccessLog = require('./models/AccessLog').AccessLog;
 var moment = require('moment');
+
 mongoose.connect('mongodb://localhost/UpComics');
+
+
 exports.validateApiKey = function(req, res, next) {
     if (req.path == '/' || req.path.toLowerCase().indexOf('/firstrun') >= 0) {
         return next();
@@ -17,6 +21,27 @@ exports.validateApiKey = function(req, res, next) {
         }
     });
 };
+
+exports.recordQueries = function(req, res, next) {
+	var queries = {};
+	for (var param in req.query) { 
+		queries[param] = req.query[param]; 
+	}
+	for (var param in req.params) { 
+		queries[param] = req.params[param]; 
+	}
+	delete queries['api_key'];
+	//delete queries['api_key'];
+	AccessLog.create({
+		user :  req.query.api_key,
+		path : req.path,
+		query : queries
+	}, function(error, log){
+		if(error) console.error(error);
+	});
+	return next();
+}
+
 exports.getByPublisher = function(req, res) {
     var query = buildQuery().setPublisher(new RegExp(req.param('publisher'), "i")).getQuery();
     getComics(query, handleResponse(res));
@@ -25,6 +50,7 @@ exports.countByPublisher = function(req, res) {
     var query = buildQuery().setPublisher(new RegExp(req.param('publisher'), "i")).getQuery();
     getComicsCount(query, handleResponse(res));
 };
+
 exports.getComicsByDate = function(req, res) {
     var release_date = moment(req.param('date'));
     var query = buildQuery().setReleaseDate(release_date.format('YYYY-MM-DD')).getQuery();
@@ -35,6 +61,7 @@ exports.countComicsByDate = function(req, res) {
     var query = buildQuery().setReleaseDate(release_date.format('YYYY-MM-DD')).getQuery();
     getComicsCount(query, handleResponse(res));
 };
+
 exports.getTodaysReleases = function(req, res) {
     var query = buildQuery().setReleaseDate(moment().format('YYYY-MM-DD')).getQuery();
     getComics(query, handleResponse(res));
@@ -43,6 +70,7 @@ exports.countTodaysReleases = function(req, res) {
     var query = buildQuery().setReleaseDate(moment().format('YYYY-MM-DD')).getQuery();
     getComicsCount(query, handleResponse(res));
 };
+
 exports.getThisWeeksReleases = function(req, res) {
     var firstOfWeek = moment().startOf('week');
     var query = buildQuery().setReleaseDate({
@@ -59,6 +87,7 @@ exports.countThisWeeksReleases = function(req, res) {
     }).getQuery();
     getComicsCount(query, handleResponse(res));
 };
+
 exports.getBySeries = function(req, res) {
     var query = buildQuery().setTitle(new RegExp(req.param('series'), "i")).getQuery();
     getComics(query, handleResponse(res));
@@ -67,6 +96,7 @@ exports.countBySeries = function(req, res) {
     var query = buildQuery().setTitle(new RegExp(req.param('series'), "i")).getQuery();
     getComicsCount(query, handleResponse(res));
 };
+
 exports.advancedSearch = function(req, res) {
     var release_date = moment().format("YYYY-MM-DD");
     if (req.param('release_date')) {
@@ -163,7 +193,7 @@ function handleResponse(res) {
     var res = res;
     return function(error, docs) {
         if (error) {
-            console.log(error);
+            console.error(error);
             return res.status(500).send('An unexpected error occured');
         }
         return res.send(docs);
