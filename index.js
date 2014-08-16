@@ -2,9 +2,13 @@ var express = require('express');
 var bodyParser = require('body-parser')
 var app = express();
 var childprocess = require('child_process');
-var api = require('./api');
+var api = require('./controllers/api');
+var admin = require('./controllers/admin');
 var firstrun = require('./FirstRun');
 var engines = require('consolidate');
+var mongoose = require('mongoose');
+
+mongoose.connect('mongodb://localhost/UpComics');
 
 var scraper = childprocess.spawn('node', ['scraper.js']);
 var restartScraper = function(code){
@@ -59,6 +63,10 @@ app.get('/series/:series', api.recordQueries, api.getBySeries);
 app.get('/series/:series/count', api.recordQueries, api.countBySeries);
 // Advanced search
 app.get('/search', api.recordQueries, api.advancedSearch);
+// Admin
+app.get('/admin/topuser', admin.validateAdmin, admin.getMostActiveUser);
+app.get('/admin/topusers/:number', admin.validateAdmin, admin.getTopUsers);
+
 
 app.listen(app.get('port'));
 console.log('Magic happens on port ' + app.get('port'));

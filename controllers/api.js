@@ -1,11 +1,7 @@
 var mongoose = require('mongoose');
-var Comic = require('./models/Comic').Comic;
-var User = require('./models/User').User;
-var AccessLog = require('./models/AccessLog').AccessLog;
+var Comic = require('../models/Comic').Comic;
+var User = require('../models/User').User;
 var moment = require('moment');
-
-mongoose.connect('mongodb://localhost/UpComics');
-
 
 exports.validateApiKey = function(req, res, next) {
     if (req.path == '/' || req.path.toLowerCase().indexOf('/firstrun') >= 0) {
@@ -23,24 +19,37 @@ exports.validateApiKey = function(req, res, next) {
 };
 
 exports.recordQueries = function(req, res, next) {
-	var queries = {};
-	for (var param in req.query) { 
-		queries[param] = req.query[param]; 
-	}
-	for (var param in req.params) { 
-		queries[param] = req.params[param]; 
-	}
-	delete queries['api_key'];
-	//delete queries['api_key'];
-	AccessLog.create({
-		user :  req.query.api_key,
-		path : req.path,
-		query : queries
-	}, function(error, log){
-		if(error) console.error(error);
-	});
-	return next();
-}
+    function logRequest(error, user){
+        var queries = {};
+        var log = user.log || [];
+
+        for (var param in req.query) { 
+            queries[param] = req.query[param]; 
+        }
+        for (var param in req.params) { 
+            queries[param] = req.params[param]; 
+        }
+        delete queries['api_key'];
+
+        log.push({
+            path : req.path,
+            query : queries,
+            date : Date.now
+        });
+        User.update({ _id : user._id }, {$set : { 'log' : log } }, function(error){
+            if (error) {
+                console.error(error);
+                return res.status(500).send('An unexpected error occured');
+            }
+            return next();
+        });
+    };
+
+     User.findOne({
+        _id: req.query.api_key
+    }, logRequest);
+
+};
 
 exports.getByPublisher = function(req, res) {
     var query = buildQuery().setPublisher(new RegExp(req.param('publisher'), "i")).getQuery();
