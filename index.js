@@ -1,9 +1,14 @@
 var express = require('express');
+var bodyParser = require('body-parser')
 var app = express();
 var childprocess = require('child_process');
-var api = require('./api');
+var api = require('./controllers/api');
+var admin = require('./controllers/admin');
 var firstrun = require('./FirstRun');
 var engines = require('consolidate');
+var mongoose = require('mongoose');
+
+mongoose.connect('mongodb://localhost/UpComics');
 
 var scraper = childprocess.spawn('node', ['scraper.js']);
 var restartScraper = function(code){
@@ -12,6 +17,13 @@ var restartScraper = function(code){
     scraper.on('close', restartScraper);
 };
 scraper.on('close', restartScraper);
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+// parse application/json
+app.use(bodyParser.json())
+// parse application/vnd.api+json as json
+app.use(bodyParser.json({ type: 'application/vnd.api+json' }))
 
 app.use(express.static(__dirname + '/public'));
 app.set('views', __dirname + '/views');
@@ -35,15 +47,26 @@ app.all('*', function(req, res, next) {
 app.all('*', api.validateApiKey);
 // First Run
 app.get('/firstrun', firstrun.index);
-app.post('/firstrun/submit', firstrun.submit);
+app.post('/firstrun', firstrun.submit);
 // Publisher
-app.get('/publisher/:publisher/count', api.countByPublisher);
+app.get('/publisher/:publisher', api.recordQueries, api.getByPublisher);
+app.get('/publisher/:publisher/count', api.recordQueries, api.countByPublisher);
 // Date
-app.get('/date/:date', api.getComicsByDate);
-app.get('/today', api.getTodaysReleases);
-app.get('/thisweek', api.getThisWeeksReleases);
+app.get('/date/:date', api.recordQueries, api.getComicsByDate);
+app.get('/date/:date/count', api.recordQueries, api.countComicsByDate);
+app.get('/today', api.recordQueries, api.getTodaysReleases);
+app.get('/today/count', api.recordQueries, api.countTodaysReleases);
+app.get('/thisweek', api.recordQueries, api.getThisWeeksReleases);
+app.get('/thisweek/count', api.recordQueries, api.countThisWeeksReleases);
 // Series
-app.get('/series/:series', api.getBySeries);
+app.get('/series/:series', api.recordQueries, api.getBySeries);
+app.get('/series/:series/count', api.recordQueries, api.countBySeries);
+// Advanced search
+app.get('/search', api.recordQueries, api.advancedSearch);
+// Admin
+app.get('/admin/topuser', admin.validateAdmin, admin.getMostActiveUser);
+app.get('/admin/topusers/:number', admin.validateAdmin, admin.getTopUsers);
+
 
 app.listen(app.get('port'));
 console.log('Magic happens on port ' + app.get('port'));
