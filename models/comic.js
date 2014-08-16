@@ -5,7 +5,8 @@ var comicSchema = new mongoose.Schema({
   issue: String,
   release_date: String,
   publisher: String,
-  link : String
+  link : String,
+  last_updated : { type: Date, default: Date.now }
 });
 
 var Comic = mongoose.model('Comic', comicSchema);
