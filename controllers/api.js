@@ -107,7 +107,7 @@ exports.countBySeries = function(req, res) {
 };
 
 exports.advancedSearch = function(req, res) {
-    var release_date = moment().format("YYYY-MM-DD");
+    var release_date = { $gte : moment().format("YYYY-MM-DD") };
     if (req.param('release_date')) {
         release_date = moment(req.param('release_date')).format('YYYY-MM-DD');
     } else if (req.param('release_date_start') && req.param('release_date_end')) {
