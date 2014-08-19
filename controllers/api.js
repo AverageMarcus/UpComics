@@ -52,57 +52,77 @@ exports.recordQueries = function(req, res, next) {
 };
 
 exports.getByPublisher = function(req, res) {
-    var query = buildQuery().setPublisher(new RegExp(req.param('publisher'), "i")).getQuery();
+    var query = buildQuery()
+                .setPublisher(new RegExp(req.param('publisher'), "i"))
+                .getQuery();
     getComics(query, handleResponse(res));
 };
 exports.countByPublisher = function(req, res) {
-    var query = buildQuery().setPublisher(new RegExp(req.param('publisher'), "i")).getQuery();
+    var query = buildQuery()
+                .setPublisher(new RegExp(req.param('publisher'), "i"))
+                .getQuery();
     getComicsCount(query, handleResponse(res));
 };
 
 exports.getComicsByDate = function(req, res) {
     var release_date = moment(req.param('date'));
-    var query = buildQuery().setReleaseDate(release_date.format('YYYY-MM-DD')).getQuery();
+    var query = buildQuery()
+                .setReleaseDate(release_date.format('YYYY-MM-DD'))
+                .getQuery();
     getComics(query, handleResponse(res));
 };
 exports.countComicsByDate = function(req, res) {
     var release_date = moment(req.param('date'));
-    var query = buildQuery().setReleaseDate(release_date.format('YYYY-MM-DD')).getQuery();
+    var query = buildQuery()
+                .setReleaseDate(release_date.format('YYYY-MM-DD'))
+                .getQuery();
     getComicsCount(query, handleResponse(res));
 };
 
 exports.getTodaysReleases = function(req, res) {
-    var query = buildQuery().setReleaseDate(moment().format('YYYY-MM-DD')).getQuery();
+    var query = buildQuery()
+                .setReleaseDate(moment().format('YYYY-MM-DD'))
+                .getQuery();
     getComics(query, handleResponse(res));
 };
 exports.countTodaysReleases = function(req, res) {
-    var query = buildQuery().setReleaseDate(moment().format('YYYY-MM-DD')).getQuery();
+    var query = buildQuery()
+                .setReleaseDate(moment().format('YYYY-MM-DD'))
+                .getQuery();
     getComicsCount(query, handleResponse(res));
 };
 
 exports.getThisWeeksReleases = function(req, res) {
     var firstOfWeek = moment().startOf('week');
-    var query = buildQuery().setReleaseDate({
-        $gte: firstOfWeek.format('YYYY-MM-DD'),
-        $lte: moment(firstOfWeek.add(7, 'd')).format('YYYY-MM-DD')
-    }).getQuery();
+    var query = buildQuery()
+                .setReleaseDate({
+                    $gte: firstOfWeek.format('YYYY-MM-DD'),
+                    $lte: moment(firstOfWeek.add(7, 'd')).format('YYYY-MM-DD')
+                })
+                .getQuery();
     getComics(query, handleResponse(res));
 };
 exports.countThisWeeksReleases = function(req, res) {
     var firstOfWeek = moment().startOf('week');
-    var query = buildQuery().setReleaseDate({
-        $gte: firstOfWeek.format('YYYY-MM-DD'),
-        $lte: moment(firstOfWeek.add(7, 'd')).format('YYYY-MM-DD')
-    }).getQuery();
+    var query = buildQuery()
+                .setReleaseDate({
+                    $gte: firstOfWeek.format('YYYY-MM-DD'),
+                    $lte: moment(firstOfWeek.add(7, 'd')).format('YYYY-MM-DD')
+                })
+                .getQuery();
     getComicsCount(query, handleResponse(res));
 };
 
 exports.getBySeries = function(req, res) {
-    var query = buildQuery().setTitle(new RegExp(req.param('series'), "i")).getQuery();
+    var query = buildQuery()
+                .setTitle(new RegExp(req.param('series'), "i"))
+                .getQuery();
     getComics(query, handleResponse(res));
 };
 exports.countBySeries = function(req, res) {
-    var query = buildQuery().setTitle(new RegExp(req.param('series'), "i")).getQuery();
+    var query = buildQuery()
+                .setTitle(new RegExp(req.param('series'), "i"))
+                .getQuery();
     getComicsCount(query, handleResponse(res));
 };
 
@@ -128,8 +148,17 @@ exports.advancedSearch = function(req, res) {
             $lte: moment(req.param('release_date_end')).format('YYYY-MM-DD')
         };
     }
-    var query = buildQuery().setTitle(new RegExp(req.param('series'), "i")).setPublisher(new RegExp(req.param('publisher'), "i")).setIssue(req.param('issue')).setReleaseDate(release_date).getQuery();
-    getComics(query, handleResponse(res));
+    var query = buildQuery()
+                .setTitle(new RegExp(req.param('series'), "i"))
+                .setPublisher(new RegExp(req.param('publisher'), "i"))
+                .setIssue(req.param('issue'))
+                .setReleaseDate(release_date)
+                .getQuery();
+    if(req.getParam('count') == 1){
+        getComicsCount(query, handleResponse(res));
+    }else{
+        getComics(query, handleResponse(res));
+    }
 };
 
 function buildQuery() {
