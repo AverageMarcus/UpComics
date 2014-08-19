@@ -33,23 +33,30 @@ db.once('open', function() {
                     }
 
                     domComics.each(function(){
-                        var fullTitle = $(this).text().trim();
-                        var link = baseMarvelURL + $(this).find('a').attr('href');
-                        //TODO: Fetch date from each page
-                        var title = titleHelper.getTitle(fullTitle);
-                        var issue = titleHelper.getIssue(fullTitle);
+                        (function($comic){
+                            var fullTitle = $comic.text().trim();
+                            var link = baseMarvelURL + $comic.find('a').attr('href');
+                            var release_date = undefined;
+                            request(link, function(error, response, html){
+                                var $$ = cheerio.load(html);
+                                release_date = moment($$(this).find('.featured-item-meta').text().trim().substr($$(this).find('.featured-item-meta').text().trim().indexOf('Published: ')+11, $$(this).find('.featured-item-meta').text().trim().indexOf('\n')).trim());
 
-                        var newComic = {
-                            title: title,
-                            issue: issue,
-                            release_date: undefined,
-                            publisher: 'Marvel',
-                            link : link
-                        };
+                                var title = titleHelper.getTitle(fullTitle);
+                                var issue = titleHelper.getIssue(fullTitle);
 
-                        Comic.update({ title : newComic.title, publisher: newComic.publisher}, {$set: newComic}, {upsert:true}, function(err, newComic){
-                            if (err) return console.error(err);
-                        });
+                                var newComic = {
+                                    title: title,
+                                    issue: issue,
+                                    release_date: release_date.format('YYYY-MM-DD'),
+                                    publisher: 'Marvel',
+                                    link : link
+                                };
+
+                                Comic.update({ title : newComic.title, publisher: newComic.publisher}, {$set: newComic}, {upsert:true}, function(err, newComic){
+                                    if (err) return console.error(err);
+                                });
+                            });
+                        }($(this));
                     });
                     now.add(1, 'months');
                     scrapeMarvelComics(now);
@@ -84,14 +91,14 @@ db.once('open', function() {
 
                         var fullTitle = $(this).find('h1').text().trim();
                         var link = baseImageURL + $(this).find('h1').find('a').attr('href');
-                        var date = moment($(this).find('.pub_date').text());
+                        var release_date = moment($(this).find('.pub_date').text());
                         var title = titleHelper.getTitle(fullTitle);
                         var issue = titleHelper.getIssue(fullTitle);
                         
                         var newComic = {
                             title: title,
                             issue: issue,
-                            release_date: date.format('YYYY-MM-DD'),
+                            release_date: release_date.format('YYYY-MM-DD'),
                             publisher: 'Image',
                             link : link
                         };
@@ -137,14 +144,14 @@ db.once('open', function() {
                         var link = baseImageURL + $(this).find('a').attr('href');
                         var title = titleHelper.getTitle(fullTitle);
                         var issue = titleHelper.getIssue(fullTitle);
-                        var date = $(this).find('.onsale').text();
-                        date = date.substring(date.lastIndexOf(' ')).trim() + '/2014';
-                        date = moment(date);
+                        var release_date = $(this).find('.onsale').text();
+                        release_date = release_date.substring(release_date.lastIndexOf(' ')).trim() + '/2014';
+                        release_date = moment(release_date);
                        
                         var newComic = {
                             title: title,
                             issue: issue,
-                            release_date: date.format('YYYY-MM-DD'),
+                            release_date: release_date.format('YYYY-MM-DD'),
                             publisher: 'DC',
                             link : link
                         };
@@ -196,7 +203,7 @@ db.once('open', function() {
                                         var newComic = {
                                             title: title,
                                             issue: issue,
-                                            release_date: release_date,
+                                            release_date: release_date.format('YYYY-MM-DD'),
                                             publisher: 'Dark Horse',
                                             link : link
                                         };
