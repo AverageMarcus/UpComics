@@ -56,7 +56,7 @@ db.once('open', function() {
                                     if (err) return console.error(err);
                                 });
                             });
-                        }($(this));
+                        }($(this)));
                     });
                     now.add(1, 'months');
                     scrapeMarvelComics(now);
@@ -126,40 +126,54 @@ db.once('open', function() {
                 if(error) console.error(error);
                 if(!error){
                     console.log("Got a response");
-
-                    //TODO: Need to find some way of loading all results
+                    
                     var $ = cheerio.load(html);
 
-                    var releases = [];
+                    request.post(baseDCURL + '/browse_fetch', {form:{
+                        'action' : 'load_more',
+                        'filters[content_type][id]' : 'content_type-1384895294',
+                        'filters[content_type][fname]' : 'content_type',
+                        'filters[content_type][filter_data]' : $('[data-filter=content_type]').data('filter-data'),
+                        'filters[content_type][cur_value]' : 'comic',
+                        'filters[date][filter_data]' : $('[data-filter=date]').data('filter-data'),
+                        'filters[date][cur_value]' : now.format("MM")+'/01/'+now.format("YYYY"),
+                        'filters[date_end][filter_data]' : $('[data-filter=date_end]').data('filter-data'),
+                        'filters[date_end][cur_value]' : now.format("MM")+'/'+lastDayOfMonth.format("DD")+'/'+now.format("YYYY"),
+                        'conf[num_per_page]' : '500',
+                        'offset' : '0'
+                    }}, function (error, response, html){
+                        var nodeComics = JSON.parse(html)['nodes'];
+                        if(nodeComics.length === 0){
+                            console.log("Done for now");
+                            return;
+                        }
+                        for(var i=0;i<nodeComics.length;i++){
+                            var $ = cheerio.load(nodeComics[i]);
 
-                    var domComics = $('li .title');
-                    if(domComics.length === 0){
-                        console.log("Done for now");
-                        return;
-                    }
+                            var fullTitle = $(nodeComics[i]).find('.title a').text().trim();
+                            if(fullTitle){
+                                var link = baseImageURL + $(nodeComics[i]).find('.title a').attr('href');
+                                var title = titleHelper.getTitle(fullTitle);
+                                var issue = titleHelper.getIssue(fullTitle);
+                                var release_date = $(nodeComics[i]).find('.onsale').text();
+                                release_date = release_date.substring(release_date.lastIndexOf(' ')).trim() + '/2014';
+                                release_date = moment(release_date);
+                               
+                                var newComic = {
+                                    title: title,
+                                    issue: issue,
+                                    release_date: release_date.format('YYYY-MM-DD'),
+                                    publisher: 'DC',
+                                    link : link
+                                };
 
-                    domComics.each(function(){
-
-                        var fullTitle = $(this).find('a').text().trim();
-                        var link = baseImageURL + $(this).find('a').attr('href');
-                        var title = titleHelper.getTitle(fullTitle);
-                        var issue = titleHelper.getIssue(fullTitle);
-                        var release_date = $(this).find('.onsale').text();
-                        release_date = release_date.substring(release_date.lastIndexOf(' ')).trim() + '/2014';
-                        release_date = moment(release_date);
-                       
-                        var newComic = {
-                            title: title,
-                            issue: issue,
-                            release_date: release_date.format('YYYY-MM-DD'),
-                            publisher: 'DC',
-                            link : link
-                        };
-
-                        Comic.update({ title : newComic.title, publisher: newComic.publisher}, {$set: newComic}, {upsert:true}, function(err, newComic){
-                            if (err) return console.error(err);
-                        });
+                                Comic.update({ title : newComic.title, publisher: newComic.publisher}, {$set: newComic}, {upsert:true}, function(err, newComic){
+                                    if (err) return console.error(err);
+                                }); 
+                            }                            
+                        }
                     });
+
                     now.add(1, 'months');
                     scrapeDCComics(now);
                 }
