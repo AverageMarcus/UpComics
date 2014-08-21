@@ -219,11 +219,8 @@ function getComics(query, next) {
 }
 
 function getComicsCount(query, next) {
-    Comic.count(query, {
-        '_id': 0
-    }, function(error, count) {
-        query['count'] = count;
-        return next(error, query);
+    Comic.count(query, function(error, count) {
+        return next(error, ''+count); // Force string
     });
 }
 
