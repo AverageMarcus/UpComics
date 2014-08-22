@@ -6,13 +6,13 @@ var Comic = require('../models/Comic').Comic;
 var moment = require('moment');
 var titleHelper = require('../utils/titleHelper');
 
-var baseImageURL = 'http://www.dynamite.com';
+var baseDynamiteURL = 'http://www.dynamite.com';
 
-var imageScrape = schedule.scheduleJob({hour: 10, dayOfWeek: new schedule.Range(1, 5)}, function(){
+var dynamiteScrape = schedule.scheduleJob({hour: 10, dayOfWeek: new schedule.Range(1, 5)}, function(){
     console.log("About to scrape Dynamite comics");
     var scrapeDynamiteComics = function scrapeDynamiteComics(month){
         var now = month || moment();
-        var url = baseImageURL + '/htmlfiles/previews.html?getMonth='+now.format("MMMM")+'&getYear='+now.format("YYYY");
+        var url = baseDynamiteURL + '/htmlfiles/previews.html?getMonth='+now.format("MMMM")+'&getYear='+now.format("YYYY");
         console.log("Scraping "+url);
         request(url, function(error, response, html){
             if(error) console.error(error);
@@ -31,7 +31,7 @@ var imageScrape = schedule.scheduleJob({hour: 10, dayOfWeek: new schedule.Range(
                 var i = 0;
                 domComics.each(function(){
                     var fullTitle = $(this).find('strong').text().trim();
-                    var link = baseImageURL + $(this).find('a').first().attr('href');
+                    var link = baseDynamiteURL + $(this).find('a').first().attr('href');
                     var release_date = moment(html.match(/ON SALE DATE: ([\w]+ [\d+])/i)[i++] + now.format(" YYYY"));
                     var title = titleHelper.getTitle(fullTitle);
                     var issue = titleHelper.getIssue(fullTitle);
