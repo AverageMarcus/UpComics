@@ -91,3 +91,15 @@ key | description | notes
 /search?api_key=123456789&publisher=Marvel&release_date=2014/08/27
 ```
 This will return all releases on the 27th August 2014 from Marvel
+
+### Example Response
+
+```
+{
+	"issue":"24",
+	"link":"http://imagecomics.com/comics/releases/thief-of-thieves-24",
+	"publisher":"Image",
+	"release_date":"2014-09-17",
+	"title":"Thief Of Thieves"
+}
+```
