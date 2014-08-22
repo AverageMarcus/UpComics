@@ -21,8 +21,6 @@ var imageScrape = schedule.scheduleJob({hour: 6, dayOfWeek: new schedule.Range(1
 
                 var $ = cheerio.load(html);
 
-                var releases = [];
-
                 var domComics = $('.release_box .right');
                 if(domComics.length === 0){
                     console.log("Done for now");
@@ -56,3 +54,5 @@ var imageScrape = schedule.scheduleJob({hour: 6, dayOfWeek: new schedule.Range(1
     };
     scrapeImageComics();
 });
+
+console.log("✔ Image scraper loaded");

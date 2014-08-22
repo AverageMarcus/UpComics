@@ -74,3 +74,5 @@ var dcScrape = schedule.scheduleJob({hour: 5, dayOfWeek: new schedule.Range(1, 5
     };
     scrapeDCComics();
 });
+
+console.log("✔ DC scraper loaded");

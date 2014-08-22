@@ -56,3 +56,5 @@ var marvelScrape = schedule.scheduleJob({hour: 7, dayOfWeek: new schedule.Range(
     };
     scrapeMarvelComics();
 });
+
+console.log("✔ Marvel scraper loaded");

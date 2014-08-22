@@ -63,3 +63,5 @@ var darkHorseScrape = schedule.scheduleJob({hour: 8, dayOfWeek: new schedule.Ran
     };
     scrapeDarkHorseComics();
 });
+
+console.log("✔ Dark Horse scraper loaded");

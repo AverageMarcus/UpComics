@@ -21,8 +21,6 @@ var dynamiteScrape = schedule.scheduleJob({hour: 10, dayOfWeek: new schedule.Ran
 
                 var $ = cheerio.load(html);
 
-                var releases = [];
-
                 var domComics = $('#indexPlacement tr[align=left]');
                 if(domComics.length === 0){
                     console.log("Done for now");
