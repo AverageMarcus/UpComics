@@ -154,7 +154,7 @@ exports.advancedSearch = function(req, res) {
                 .setIssue(req.param('issue'))
                 .setReleaseDate(release_date)
                 .getQuery();
-    if(req.getParam('count') == 1){
+    if(req.param('count') == 1){
         getComicsCount(query, handleResponse(res));
     }else{
         getComics(query, handleResponse(res));
