@@ -1,14 +1,14 @@
-var scraper = require('./ScraperBase');
+var Scraper = require('./ScraperBase');
 var request = require('request');
 var cheerio = require('cheerio');
 var moment = require('moment');
 var titleHelper = require('../utils/titleHelper');
 var extend = require('util')._extend;
 
-var baseURL = 'http://marvel.com';
-var options = {
+var marvel = Object.create(Scraper);
+marvel.options = {
     'publisher' : 'Marvel',
-    'URL' : baseURL+'/comics/calendar/month/$year-$month-01',
+    'URL' : 'http://marvel.com/comics/calendar/month/$year-$month-01',
     'monthFormat' : 'MM',
     'yearFormat' : 'YYYY',
     'dayFormat'  : 'DD',
@@ -25,7 +25,7 @@ var options = {
             (function($comic){
                 var fullTitle = $comic.text().trim();
                 console.log("Found "+fullTitle);
-                var link = baseURL + $comic.find('a').attr('href').trim();
+                var link = 'http://marvel.com' + $comic.find('a').attr('href').trim();
                 var release_date = undefined;
                 request(link, function(error, response, html){
                     try{
@@ -47,7 +47,7 @@ var options = {
                             publisher: 'Marvel',
                             link : link
                         };
-                        
+
                         addComic(newComic);
                     }catch (e){
                         errorCallback(e.message);
@@ -59,22 +59,8 @@ var options = {
     }
 };
 
-exports.start = function(opts){
-    if(opts){
-        options = extend(options, opts); 
-    }
-    scraper.scraper(options);
-};
-
-exports.startNow = function(){
-    var opts = { 
-        'scrapeTime' : parseInt(moment().format('H')),
-        'scrapeMinute' : parseInt(moment().format('m'))+1
-    }
-    options = extend(options, opts); 
-    scraper.scraper(options);
-};
+module.exports = marvel;
 
 if(process.argv && process.argv[2] && process.argv[2] == 'start'){
-    exports.startNow();
+    marvel.startNow();
 }
