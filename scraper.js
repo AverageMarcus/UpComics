@@ -12,7 +12,15 @@ db.once('open', function() {
     console.log("We have a database");
 
     require("fs").readdirSync("./scrapers").forEach(function(file) {
-      require("./scrapers/" + file);
+      if(file !== 'ScraperBase.js'){
+        if(process.argv[2]){
+          if(file.indexOf(process.argv[2])>=0){
+            require("./scrapers/" + file).startNow();
+          }
+        }else{
+          require("./scrapers/" + file).start();
+        }
+      }
     });
 
 });
