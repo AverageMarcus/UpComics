@@ -24,7 +24,7 @@ dynamite.options = {
         domComics.each(function(){
             try{
                 var fullTitle = $(this).find('strong').text().trim();
-                var link = baseDynamiteURL + $(this).find('a').first().attr('href');
+                var link = 'http://www.dynamite.com' + $(this).find('a').first().attr('href');
                 var release_date = moment(html.match(/ON SALE DATE: ([\w]+ [\d+])/i)[i++] + scrapeVars.now.format(" YYYY"));
                 var title = titleHelper.getTitle(fullTitle);
                 var issue = titleHelper.getIssue(fullTitle);
