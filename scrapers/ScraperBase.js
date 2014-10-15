@@ -12,7 +12,7 @@ var Scraper = {
     console.error("ERROR: " + err);
   },
   completedCallback : function(){
-    console.log("Scrape completed");
+    console.log('✔' + this.options.publisher + " Scrape Completed!");
   },
   addComic : function(newComic){
     Comic.update({ title : newComic.title, publisher: newComic.publisher, issue: newComic.issue}, {$set: newComic}, {upsert:true}, function(err, comicsUpdated){
@@ -20,17 +20,17 @@ var Scraper = {
         console.log("Added "+newComic.title+" #"+newComic.issue +" by "+newComic.publisher);
     });
   },
-  scrape : function(options, errorCallback){
-    var errorCallback = errorCallback || Scraper.errorHandler;
+  scrape : function(options, errCb){
+    var errorCallback = errCb || Scraper.errorHandler;
 
-    if(!options.publisher 
-      || !options.URL
-      || !options.monthFormat
-      || !options.yearFormat
-      || !options.dayFormat 
-      || !options.scrapeFunction
-      || !options.scrapeTime
-      || !options.scrapeMinute){
+    if(!options.publisher ||
+       !options.URL||
+       !options.monthFormat||
+       !options.yearFormat||
+       !options.dayFormat ||
+       !options.scrapeFunction||
+       !options.scrapeTime||
+       !options.scrapeMinute){
       errorCallback("Missing required options");
       return;
     }
@@ -57,7 +57,14 @@ var Scraper = {
               console.log("Scraping "+URL);
               var $ = cheerio.load(html);
               
-              options.scrapeFunction($, Scraper.addComic, nextCallback, errorCallback, Scraper.completedCallback);
+              options.scrapeFunction({
+                '$' : $,
+                'addComic' : Scraper.addComic,
+                'nextCallBack' : nextCallback,
+                'errorCallback' : errorCallback,
+                'completedCallback' : Scraper.completedCallback,
+                'now' : now,
+              });
               
             }else if(response.statusCode === 404){
               console.log(URL+" not found, assuming end of scrape");
@@ -72,16 +79,16 @@ var Scraper = {
   },
   start : function(opt){
     if(opts){
-      this.options = extend(this.options, opts); 
+      this.options = extend(this.options, opts);
     }
     this.scrape(this.options);
   },
   startNow : function(){
     var opts = { 
-        'scrapeTime' : parseInt(moment().format('H')),
-        'scrapeMinute' : parseInt(moment().format('m'))+1
-    }
-    this.options = extend(this.options, opts); 
+      'scrapeTime' : parseInt(moment().format('H')),
+      'scrapeMinute' : parseInt(moment().format('m'))+1
+    };
+    this.options = extend(this.options, opts);
     this.scrape(this.options);
   }
 };

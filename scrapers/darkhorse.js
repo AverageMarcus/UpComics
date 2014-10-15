@@ -1,43 +1,41 @@
-var scraper = require('./ScraperBase');
+var Scraper = require('./ScraperBase');
 var request = require('request');
 var cheerio = require('cheerio');
 var moment = require('moment');
 var titleHelper = require('../utils/titleHelper');
 var extend = require('util')._extend;
 
-var baseURL = 'http://www.darkhorse.com';
-var options = {
+var darkHorse = Object.create(Scraper);
+darkHorse.options = {
     'publisher' : 'DarkHorse',
-    'URL' : baseURL+'/Comics/Upcoming?page=',
+    'URL' : 'http://www.darkhorse.com/Comics/Upcoming?page=',
     'monthFormat' : 'MM',
     'yearFormat' : 'YYYY',
     'dayFormat'  : 'DD',
     'scrapeTime' : 8,
     'scrapeMinute' : 0,
-    'scrapeFunction' : function($, addComic, nextCallback, errorCallback, completedCallback){
-        
-        var pages = $('select[name=page]').first().length;
+    'scrapeFunction' : function(scrapeVars){
+        var pages = scrapeVars.$('select[name=page]').first().length;
 
-        for(var i=0;i<= pages;i++){
-            console.log("Fetching "+options.URL+i);
-            request(options.URL+i, function(error, response, html){
-                if(error) errorCallback(error);
+        var processPage = function processPage(pageUrl){
+            request(pageUrl, function(error, response, html){
+                if(error) scrapeVars.errorCallback(error);
                 var $$ = cheerio.load(html);
                 var domComics = $$('.list_items_container').children();
                 if(domComics.length === 0){
-                    completedCallback();
+                    scrapeVars.completedCallback();
                     return;
                 }
                 var currentDate = "";
 
                 domComics.each(function(){
                     if($$(this).is('h3')){
-                        currentDate = moment($$(this).text().trim(), "MMMM DD, YYYY")
+                        currentDate = moment($$(this).text().trim(), "MMMM DD, YYYY");
                     }
                     if($$(this).hasClass('list_item')){
                         var fullTitle = $$(this).find('.product_link').text().trim();
                         console.log("Found "+fullTitle);
-                        var link = baseURL + $$(this).find('a').first().attr('href');
+                        var link = 'http://www.darkhorse.com' + $$(this).find('a').first().attr('href');
                         var release_date = currentDate;
                         var title = titleHelper.getTitle(fullTitle);
                         var issue = titleHelper.getIssue(fullTitle);
@@ -50,32 +48,26 @@ var options = {
                             link : link
                         };
 
-                        addComic(newComic);
+                        scrapeVars.addComic(newComic);
                     }
                     
                 });
             });
+        };
+
+        for(var i=0;i<= pages;i++){
+            console.log("Fetching "+options.URL+i);
+            processPage(options.URL+i);
         }
-        completedCallback();
+        // We call the complete callback rather than the next 
+        // callback as we handle each month in the above loop
+        scrapeVars.completedCallback();
     }
 };
 
-exports.start = function(opts){
-    if(opts){
-        options = extend(options, opts); 
-    }
-    scraper.scraper(options);
-};
+module.exports = darkHorse;
 
-exports.startNow = function(){
-    var opts = { 
-        'scrapeTime' : parseInt(moment().format('H')),
-        'scrapeMinute' : parseInt(moment().format('m'))+1
-    }
-    options = extend(options, opts); 
-    scraper.scraper(options);
-};
-
+// Call the scraper directly and avoid the scheduler
 if(process.argv && process.argv[2] && process.argv[2] == 'start'){
     exports.startNow();
 }

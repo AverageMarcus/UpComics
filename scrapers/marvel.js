@@ -14,10 +14,10 @@ marvel.options = {
     'dayFormat'  : 'DD',
     'scrapeTime' : 7,
     'scrapeMinute' : 0,
-    'scrapeFunction' : function($, addComic, nextCallback, errorCallback, completedCallback){
-        var domComics = $('.comic-item h5');
+    'scrapeFunction' : function(scrapeVars){
+        var domComics = scrapeVars.$('.comic-item h5');
         if(domComics.length === 0){
-            completedCallback();
+            scrapeVars.completedCallback();
             return;
         }
 
@@ -26,7 +26,7 @@ marvel.options = {
                 var fullTitle = $comic.text().trim();
                 console.log("Found "+fullTitle);
                 var link = 'http://marvel.com' + $comic.find('a').attr('href').trim();
-                var release_date = undefined;
+                var release_date;
                 request(link, function(error, response, html){
                     try{
                         console.log("Getting more information from "+link+" for "+fullTitle);
@@ -48,19 +48,21 @@ marvel.options = {
                             link : link
                         };
 
-                        addComic(newComic);
+                        scrapeVars.addComic(newComic);
                     }catch (e){
-                        errorCallback(e.message);
+                        scrapeVars.errorCallback(e.message);
                     }
                 });
             }($(this)));
         });
-        nextCallback();
+        // Call the next callback that triggers scraping the next month
+        scrapeVars.nextCallback();
     }
 };
 
 module.exports = marvel;
 
+// Call the scraper directly and avoid the scheduler
 if(process.argv && process.argv[2] && process.argv[2] == 'start'){
     marvel.startNow();
 }

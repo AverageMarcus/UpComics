@@ -1,46 +1,43 @@
+var Scraper = require('./ScraperBase');
 var request = require('request');
 var cheerio = require('cheerio');
-var schedule = require('node-schedule');
-var mongoose = require('mongoose');
-var Comic = require('../models/Comic').Comic;
 var moment = require('moment');
 var titleHelper = require('../utils/titleHelper');
+var extend = require('util')._extend;
 
-var baseDCURL = 'http://www.dccomics.com';
-
-var dcScrape = schedule.scheduleJob({hour: 5, dayOfWeek: new schedule.Range(1, 5)}, function(){
-    console.log("About to scrape DC comics");
-    var scrapeDCComics = function scrapeDCComics(month){
-        var now = month || moment();
-        var lastDayOfMonth = now.add(1, 'months').date(0);
-        var url = baseDCURL + '/browse?content_type=comic&date='+now.format("MM")+'/01/'+now.format("YYYY")+'&date_end='+now.format("MM")+'/'+lastDayOfMonth.format("DD")+'/'+now.format("YYYY");
-        console.log("Scraping "+url);
-        request(url, function(error, response, html){
-            if(error) console.error(error);
-            if(!error){
-                console.log("Got a response");
-                
-                var $ = cheerio.load(html);
-
-                request.post(baseDCURL + '/browse_fetch', {form:{
+var dc = Object.create(Scraper);
+dc.options = {
+    'publisher' : 'DC',
+    'URL' : 'http://www.dccomics.com/browse?content_type=comic&date=$month/01/$year&date_end=$month/31/$year',
+    'monthFormat' : 'MM',
+    'yearFormat' : 'YYYY',
+    'dayFormat'  : 'DD',
+    'scrapeTime' : 6,
+    'scrapeMinute' : 0,
+    'scrapeFunction' : function(scrapeVars){
+        request.post('http://www.dccomics.com/browse_fetch', {
+                form:{
                     'action' : 'load_more',
                     'filters[content_type][id]' : 'content_type-1384895294',
                     'filters[content_type][fname]' : 'content_type',
-                    'filters[content_type][filter_data]' : $('[data-filter=content_type]').data('filter-data'),
+                    'filters[content_type][filter_data]' : scrapeVars.$('[data-filter=content_type]').data('filter-data'),
                     'filters[content_type][cur_value]' : 'comic',
-                    'filters[date][filter_data]' : $('[data-filter=date]').data('filter-data'),
-                    'filters[date][cur_value]' : now.format("MM")+'/01/'+now.format("YYYY"),
-                    'filters[date_end][filter_data]' : $('[data-filter=date_end]').data('filter-data'),
-                    'filters[date_end][cur_value]' : now.format("MM")+'/'+lastDayOfMonth.format("DD")+'/'+now.format("YYYY"),
+                    'filters[date][filter_data]' : scrapeVars.$('[data-filter=date]').data('filter-data'),
+                    'filters[date][cur_value]' : scrapeVars.now.format("MM")+'/01/'+scrapeVars.now.format("YYYY"),
+                    'filters[date_end][filter_data]' : scrapeVars.$('[data-filter=date_end]').data('filter-data'),
+                    'filters[date_end][cur_value]' : scrapeVars.now.format("MM")+'/31/'+scrapeVars.now.format("YYYY"),
                     'conf[num_per_page]' : '500',
                     'offset' : '0'
-                }}, function (error, response, html){
-                    var nodeComics = JSON.parse(html)['nodes'];
-                    if(nodeComics.length === 0){
-                        console.log("Done for now");
-                        return;
-                    }
-                    for(var i=0;i<nodeComics.length;i++){
+                }
+            },
+            function (error, response, html){
+                var nodeComics = JSON.parse(html)['nodes'];
+                if(nodeComics.length === 0){
+                    scrapeVars.completedCallback();
+                    return;
+                }
+                for(var i=0;i<nodeComics.length;i++){
+                    try{
                         var $ = cheerio.load(nodeComics[i]);
 
                         var fullTitle = $(nodeComics[i]).find('.title a').text().trim();
@@ -60,19 +57,22 @@ var dcScrape = schedule.scheduleJob({hour: 5, dayOfWeek: new schedule.Range(1, 5
                                 link : link
                             };
 
-                            Comic.update({ title : newComic.title, publisher: newComic.publisher}, {$set: newComic}, {upsert:true}, function(err, newComic){
-                                if (err) return console.error(err);
-                            }); 
-                        }                            
+                            scrapeVars.addComic(newComic);
+                        }
+                    }catch (e){
+                        scrapeVars.errorCallback(e.message);
                     }
-                });
-
-                now.add(1, 'months');
-                scrapeDCComics(now);
+                }
             }
-        });
-    };
-    scrapeDCComics();
-});
+        );
+        // Call the next callback that triggers scraping the next month
+        scrapeVars.nextCallback();
+    }
+};
 
-console.log("✔ DC scraper loaded");
+module.exports = dc;
+
+// Call the scraper directly and avoid the scheduler
+if(process.argv && process.argv[2] && process.argv[2] == 'start'){
+    dc.startNow();
+}
