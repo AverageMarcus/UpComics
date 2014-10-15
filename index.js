@@ -65,6 +65,8 @@ app.get('/series/:series', api.recordQueries, api.getBySeries);
 app.get('/series/:series/count', api.recordQueries, api.countBySeries);
 // Advanced search
 app.get('/search', api.recordQueries, api.advancedSearch);
+// Scrape status
+app.get('/scraping', api.recordQueries, api.isScraping);
 // Admin
 app.get('/admin/topuser', admin.validateAdmin, admin.getMostActiveUser);
 app.get('/admin/topusers/:number', admin.validateAdmin, admin.getTopUsers);

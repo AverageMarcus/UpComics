@@ -3,6 +3,7 @@ var cheerio = require('cheerio');
 var schedule = require('node-schedule');
 var mongoose = require('mongoose');
 var Comic = require('../models/Comic').Comic;
+var Settings = require('../models/Settings').Settings;
 var moment = require('moment');
 var titleHelper = require('../utils/titleHelper');
 var extend = require('util')._extend;
@@ -13,6 +14,7 @@ var Scraper = {
   },
   completedCallback : function(){
     console.log('✔' + this.options.publisher + " Scrape Completed!");
+    updateScrapeStatus(false);
   },
   addComic : function(newComic){
     Comic.update({ title : newComic.title, publisher: newComic.publisher, issue: newComic.issue}, {$set: newComic}, {upsert:true}, function(err, comicsUpdated){
@@ -39,7 +41,8 @@ var Scraper = {
 
     var scheduledTask = schedule.scheduleJob({hour: options.scrapeTime, minute: options.scrapeMinute, dayOfWeek: new schedule.Range(1, 5)}, function(){
       console.log("Beginning scrape of "+options.publisher);
-      
+      updateScrapeStatus(true);
+
       var scrapeComics = function scrapeComics(month){
         var now = month || moment();
         var URL = options.URL.replace('$day', now.format(options.dayFormat)).replace('$month', now.format(options.monthFormat)).replace('$year', now.format(options.yearFormat));
@@ -91,6 +94,29 @@ var Scraper = {
     this.options = extend(this.options, opts);
     this.scrape(this.options);
   }
+};
+
+var updateScrapeStatus = function updateScrapeStatus(increment){
+  var query = Settings.where({ name: 'scrapes' });
+  query.findOne(function (err, settings) {
+    if (err) return;
+    var numOfScrapes = 0;
+    if (settings) {
+      numOfScrapes = settings.value;
+    }
+    if(increment){
+      numOfScrapes++;
+    }else{
+      numOfScrapes--;
+    }
+
+    settings.value = numOfScrapes;
+    settings.save(function (err) {
+      if(err) {
+        console.error('Unable to save scrape status setting.');
+      }
+    });
+  });
 };
 
 module.exports = Scraper;

@@ -1,5 +1,6 @@
 var Comic = require('../models/Comic').Comic;
 var User = require('../models/User').User;
+var Settings = require('../models/Settings').Settings;
 var moment = require('moment');
 
 exports.validateApiKey = function(req, res, next) {
@@ -50,10 +51,24 @@ exports.recordQueries = function(req, res, next) {
 
 };
 
+exports.isScraping = function(req, res){
+    var next = handleResponse(res);
+    var query = Settings.where({ name: 'scrapes' });
+      query.findOne(function (err, settings) {
+        if (err) return next(err);
+        var numOfScrapes = 0;
+        if (settings) {
+          numOfScrapes = settings.value;
+        }
+        // !! converts the integer to a boolean
+        return next(err, !!numOfScrapes);
+      });
+};
+
 exports.getPublishers = function(req, res){
     var next = handleResponse(res);
     Comic.distinct('publisher', function(error, publishers){
-        return next(publishers);
+        return next(error, publishers);
     });
 };
 

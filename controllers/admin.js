@@ -1,4 +1,3 @@
-var mongoose = require('mongoose');
 var User = require('../models/User').User;
 var moment = require('moment');
 
