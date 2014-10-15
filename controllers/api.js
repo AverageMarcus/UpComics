@@ -50,6 +50,13 @@ exports.recordQueries = function(req, res, next) {
 
 };
 
+exports.getPublishers = function(req, res){
+    var next = handleResponse(res);
+    Comic.distinct('publisher', function(error, publishers){
+        return next(publishers);
+    });
+};
+
 exports.getByPublisher = function(req, res) {
     var query = buildQuery()
                 .setPublisher(new RegExp(req.param('publisher'), "i"))

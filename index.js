@@ -50,6 +50,7 @@ app.all('*', api.validateApiKey);
 app.get('/firstrun', firstrun.index);
 app.post('/firstrun', firstrun.submit);
 // Publisher
+app.get('/publishers', api.recordQueries, api.getPublishers);
 app.get('/publisher/:publisher', api.recordQueries, api.getByPublisher);
 app.get('/publisher/:publisher/count', api.recordQueries, api.countByPublisher);
 // Date

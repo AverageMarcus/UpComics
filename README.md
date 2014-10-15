@@ -16,6 +16,11 @@ A valid API key is needed for all calls. API keys are supplied as a query string
 
 #### Publishers
 ```
+GET /publishers
+``` 
+Retrieve a list of all supported publishers
+
+```
 GET /publisher/:publisher
 ``` 
 Retrieve all upcoming releases from the supplied publisher (case-insensitive).
