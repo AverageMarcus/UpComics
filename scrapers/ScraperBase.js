@@ -63,7 +63,7 @@ var Scraper = {
               options.scrapeFunction({
                 '$' : $,
                 'addComic' : Scraper.addComic,
-                'nextCallBack' : nextCallback,
+                'nextCallback' : nextCallback,
                 'errorCallback' : errorCallback,
                 'completedCallback' : Scraper.completedCallback,
                 'now' : now,
