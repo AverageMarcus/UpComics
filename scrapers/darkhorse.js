@@ -69,5 +69,5 @@ module.exports = darkHorse;
 
 // Call the scraper directly and avoid the scheduler
 if(process.argv && process.argv[2] && process.argv[2] == 'start'){
-    exports.startNow();
+    darkHorse.startNow();
 }
