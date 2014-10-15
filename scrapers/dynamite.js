@@ -15,7 +15,7 @@ dynamite.options = {
     'scrapeTime' : 5,
     'scrapeMinute' : 0,
     'scrapeFunction' : function(scrapeVars){
-        var domComics = $('#indexPlacement tr[align=left]');
+        var domComics = scrapeVars.$('#indexPlacement tr[align=left]');
         if(domComics.length === 0){
             scrapeVars.completedCallback();
             return;

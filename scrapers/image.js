@@ -15,7 +15,7 @@ image.options = {
     'scrapeTime' : 4,
     'scrapeMinute' : 0,
     'scrapeFunction' : function(scrapeVars){
-        var domComics = $('.release_box .right');
+        var domComics = scrapeVars.$('.release_box .right');
         if(domComics.length === 0){
             scrapeVars.completedCallback();
             return;

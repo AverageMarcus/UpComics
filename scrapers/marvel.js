@@ -53,7 +53,7 @@ marvel.options = {
                         scrapeVars.errorCallback(e.message);
                     }
                 });
-            }($(this)));
+            }(scrapeVars.$(this)));
         });
         // Call the next callback that triggers scraping the next month
         scrapeVars.nextCallback();
