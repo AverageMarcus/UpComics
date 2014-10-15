@@ -1,5 +1,5 @@
 var express = require('express');
-var bodyParser = require('body-parser')
+var bodyParser = require('body-parser');
 var app = express();
 var childprocess = require('child_process');
 var api = require('./controllers/api');
@@ -19,11 +19,11 @@ var restartScraper = function(code){
 scraper.on('close', restartScraper);
 
 // parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 // parse application/vnd.api+json as json
-app.use(bodyParser.json({ type: 'application/vnd.api+json' }))
+app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 
 app.use(express.static(__dirname + '/public'));
 app.set('views', __dirname + '/views');
@@ -42,6 +42,7 @@ app.all('*', function(req, res, next) {
     // Allow cross origin requests
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "X-Requested-With");
+    res.header("X-Powered-By", "Whiskey & Rum");
     next();
  });
 app.all('*', api.validateApiKey);
@@ -66,7 +67,6 @@ app.get('/search', api.recordQueries, api.advancedSearch);
 // Admin
 app.get('/admin/topuser', admin.validateAdmin, admin.getMostActiveUser);
 app.get('/admin/topusers/:number', admin.validateAdmin, admin.getTopUsers);
-
 
 app.listen(app.get('port'));
 console.log('Magic happens on port ' + app.get('port'));

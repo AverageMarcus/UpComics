@@ -1,4 +1,3 @@
-var mongoose = require('mongoose');
 var Comic = require('../models/Comic').Comic;
 var User = require('../models/User').User;
 var moment = require('moment');
@@ -19,14 +18,14 @@ exports.validateApiKey = function(req, res, next) {
 };
 
 exports.recordQueries = function(req, res, next) {
-    function logRequest(error, user){
+    var logRequest = function logRequest(error, user){
         var queries = {};
         var log = user.log || [];
-
-        for (var param in req.query) { 
+        var param;
+        for (param in req.query) { 
             queries[param] = req.query[param]; 
         }
-        for (var param in req.params) { 
+        for (param in req.params) { 
             queries[param] = req.params[param]; 
         }
         delete queries['api_key'];
@@ -225,7 +224,6 @@ function getComicsCount(query, next) {
 }
 
 function handleResponse(res) {
-    var res = res;
     return function(error, docs) {
         if (error) {
             console.error(error);
