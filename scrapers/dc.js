@@ -42,7 +42,7 @@ dc.options = {
 
                         var fullTitle = $(nodeComics[i]).find('.title a').text().trim();
                         if(fullTitle){
-                            var link = baseImageURL + $(nodeComics[i]).find('.title a').attr('href');
+                            var link = 'http://www.dccomics.com' + $(nodeComics[i]).find('.title a').attr('href');
                             var title = titleHelper.getTitle(fullTitle);
                             var issue = titleHelper.getIssue(fullTitle);
                             var release_date = $(nodeComics[i]).find('.onsale').text();
