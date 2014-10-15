@@ -13,7 +13,7 @@ var Scraper = {
     console.error("ERROR: " + err);
   },
   completedCallback : function(){
-    console.log('✔' + this.options.publisher + " Scrape Completed!");
+    console.log("✔ Scrape Completed!");
     updateScrapeStatus(false);
   },
   addComic : function(newComic){
