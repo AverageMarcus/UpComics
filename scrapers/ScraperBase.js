@@ -103,6 +103,8 @@ var updateScrapeStatus = function updateScrapeStatus(increment){
     var numOfScrapes = 0;
     if (settings) {
       numOfScrapes = settings.value;
+    }else{
+      settings = new Settings ({ name : 'scrapes', value : 0});
     }
     if(increment){
       numOfScrapes++;
