@@ -80,7 +80,7 @@ var Scraper = {
     
     });
   },
-  start : function(opt){
+  start : function(opts){
     if(opts){
       this.options = extend(this.options, opts);
     }
