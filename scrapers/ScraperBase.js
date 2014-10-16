@@ -31,8 +31,8 @@ var Scraper = {
        !options.yearFormat||
        !options.dayFormat ||
        !options.scrapeFunction||
-       !options.scrapeTime||
-       !options.scrapeMinute){
+       options.scrapeTime === undefined ||
+       options.scrapeMinute === undefined){
       errorCallback("Missing required options");
       return;
     }
